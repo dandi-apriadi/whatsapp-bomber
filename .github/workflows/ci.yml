@@ -8,7 +8,7 @@ on:
 jobs:
   check:
     name: cargo fmt + clippy + check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: src-tauri
