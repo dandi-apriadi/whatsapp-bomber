@@ -90,6 +90,33 @@
         </div>
       </section>
 
+      <section class="rounded-xl bg-slate-800/60 p-5 border border-slate-700 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-semibold">Webhook (passive contact sync)</h2>
+          <span id="webhook-running-pill" class="text-xs px-2 py-1 rounded-full bg-slate-700 text-slate-300">offline</span>
+        </div>
+        <p class="text-xs text-slate-400">
+          Listens for incoming Fonnte webhook events and auto-saves senders'
+          phone numbers + push-names into your contacts. Configure the public
+          URL in Fonnte dashboard → Webhook URL (use ngrok / cloudflared to
+          expose <code>http://localhost:&lt;port&gt;/fonnte-webhook</code>).
+        </p>
+        <label class="flex items-center gap-2 text-sm">
+          <input id="webhook-enabled" type="checkbox" class="accent-emerald-500" />
+          <span>Enable embedded webhook listener</span>
+        </label>
+        <label class="text-sm space-y-1 block">
+          <span class="text-xs text-slate-400">Listen port</span>
+          <input
+            id="webhook-port"
+            type="number"
+            min="1"
+            max="65535"
+            class="w-40 rounded-lg bg-slate-900 border border-slate-700 p-2 text-sm"
+          />
+        </label>
+      </section>
+
       <div class="flex items-center gap-3">
         <button
           id="btn-save"

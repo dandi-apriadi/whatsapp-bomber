@@ -44,6 +44,23 @@ impl Default for AntiBanConfig {
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct WebhookConfig {
+    /// Whether the embedded Fonnte webhook listener should run.
+    pub enabled: bool,
+    /// TCP port the webhook server binds to (`0.0.0.0:port`).
+    pub port: u16,
+}
+
+impl Default for WebhookConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            port: 8787,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct AppSettings {
     /// Ordered list of Fonnte API keys. The first non-empty key is used in
@@ -51,6 +68,8 @@ pub struct AppSettings {
     pub api_keys: Vec<String>,
     pub account_mode: AccountMode,
     pub anti_ban: AntiBanConfig,
+    #[serde(default)]
+    pub webhook: WebhookConfig,
 }
 
 impl AppSettings {

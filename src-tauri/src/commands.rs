@@ -10,12 +10,14 @@ use crate::db::{Contact, DashboardStats, Db, LogRow};
 use crate::error::AppResult;
 use crate::import::{import_file, ColumnMap, ImportSummary, ImportedRow};
 use crate::settings::{AppSettings, SettingsStore};
+use crate::webhook::{WebhookManager, WebhookStatus};
 
 /// Bundle of long-lived handles managed by Tauri's state.
 pub struct AppState {
     pub db: Db,
     pub settings: SettingsStore,
     pub blaster: BlasterEngine,
+    pub webhook: WebhookManager,
 }
 
 #[tauri::command]
@@ -26,10 +28,38 @@ pub async fn get_settings(state: State<'_, Arc<AppState>>) -> AppResult<AppSetti
 #[tauri::command]
 pub async fn save_settings(
     state: State<'_, Arc<AppState>>,
+    app: AppHandle,
     settings: AppSettings,
 ) -> AppResult<AppSettings> {
     state.settings.replace(settings)?;
-    Ok(state.settings.snapshot())
+    let snap = state.settings.snapshot();
+    apply_webhook_settings(&state.webhook, &app, &snap).await;
+    Ok(snap)
+}
+
+async fn apply_webhook_settings(mgr: &WebhookManager, app: &AppHandle, settings: &AppSettings) {
+    if settings.webhook.enabled {
+        if let Err(e) = mgr.start(app.clone(), settings.webhook.port).await {
+            tracing::error!("failed to start webhook: {e}");
+        }
+    } else {
+        mgr.stop().await;
+    }
+}
+
+#[tauri::command]
+pub async fn webhook_status(state: State<'_, Arc<AppState>>) -> AppResult<WebhookStatus> {
+    Ok(state.webhook.status())
+}
+
+#[tauri::command]
+pub async fn restart_webhook(
+    state: State<'_, Arc<AppState>>,
+    app: AppHandle,
+) -> AppResult<WebhookStatus> {
+    let snap = state.settings.snapshot();
+    apply_webhook_settings(&state.webhook, &app, &snap).await;
+    Ok(state.webhook.status())
 }
 
 #[tauri::command]

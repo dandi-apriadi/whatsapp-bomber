@@ -23,6 +23,7 @@ async function initDashboard() {
   await refreshStats();
   await refreshLogs();
   await refreshContacts();
+  await refreshWebhookStatus();
 
   document.getElementById("btn-import").addEventListener("click", onImportClick);
   document.getElementById("btn-add-manual").addEventListener("click", onAddManual);
@@ -37,6 +38,51 @@ async function initDashboard() {
   });
 
   await listen("blast://progress", (e) => onProgress(e.payload));
+  await listen("webhook://status", (e) => renderWebhookStatus(e.payload));
+}
+
+async function refreshWebhookStatus() {
+  try {
+    const s = await invoke("webhook_status");
+    renderWebhookStatus(s);
+  } catch (e) {
+    console.warn("webhook_status failed", e);
+  }
+}
+
+function renderWebhookStatus(s) {
+  if (!s) return;
+  const pill = document.getElementById("webhook-pill");
+  if (pill) {
+    if (s.running) {
+      pill.textContent = `online · :${s.port}`;
+      pill.className = "text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300";
+    } else {
+      pill.textContent = "offline";
+      pill.className = "text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-300";
+    }
+  }
+  const set = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = v;
+  };
+  set("webhook-port-display", s.running ? s.port : "—");
+  set("webhook-received", s.total_received ?? 0);
+  set("webhook-added", s.total_contacts_added ?? 0);
+  set("webhook-updated", s.total_contacts_updated ?? 0);
+  const last = document.getElementById("webhook-last");
+  if (last) {
+    const parts = [];
+    if (s.last_received_at) parts.push(`Last event: ${s.last_received_at}`);
+    if (s.last_sender) parts.push(`from ${s.last_sender}`);
+    if (s.last_error) parts.push(`error: ${s.last_error}`);
+    last.textContent = parts.join(" · ");
+  }
+  // Refresh contacts/stats after a webhook event in case the UI is on this page.
+  if (s.total_received > 0) {
+    refreshStats();
+    refreshContacts();
+  }
 }
 
 async function onImportClick() {
@@ -215,6 +261,11 @@ async function initSettingsPage() {
   document.getElementById("max-delay").value = s.anti_ban?.max_delay_secs ?? 30;
   document.getElementById("batch-size").value = s.anti_ban?.batch_size ?? 50;
   document.getElementById("batch-pause").value = s.anti_ban?.batch_pause_secs ?? 300;
+  document.getElementById("webhook-enabled").checked = Boolean(s.webhook?.enabled);
+  document.getElementById("webhook-port").value = s.webhook?.port ?? 8787;
+
+  await refreshWebhookPill();
+  await listen("webhook://status", () => refreshWebhookPill());
 
   document.getElementById("btn-save").addEventListener("click", async () => {
     const payload = {
@@ -230,14 +281,36 @@ async function initSettingsPage() {
         batch_size: parseInt(document.getElementById("batch-size").value, 10) || 1,
         batch_pause_secs: parseInt(document.getElementById("batch-pause").value, 10) || 0,
       },
+      webhook: {
+        enabled: document.getElementById("webhook-enabled").checked,
+        port: parseInt(document.getElementById("webhook-port").value, 10) || 8787,
+      },
     };
     try {
       await invoke("save_settings", { settings: payload });
       setStatus("Saved.");
+      await refreshWebhookPill();
     } catch (err) {
       setStatus(`Save failed: ${err}`, true);
     }
   });
+}
+
+async function refreshWebhookPill() {
+  const pill = document.getElementById("webhook-running-pill");
+  if (!pill) return;
+  try {
+    const s = await invoke("webhook_status");
+    if (s.running) {
+      pill.textContent = `online · :${s.port}`;
+      pill.className = "text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300";
+    } else {
+      pill.textContent = "offline";
+      pill.className = "text-xs px-2 py-1 rounded-full bg-slate-700 text-slate-300";
+    }
+  } catch (_) {
+    /* noop */
+  }
 }
 
 function escapeHtml(s) {
