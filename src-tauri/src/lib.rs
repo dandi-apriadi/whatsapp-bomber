@@ -7,6 +7,7 @@ mod error;
 mod fonnte;
 mod import;
 mod settings;
+mod webhook;
 
 use std::sync::Arc;
 
@@ -17,6 +18,7 @@ use crate::commands::AppState;
 use crate::db::Db;
 use crate::fonnte::FonnteClient;
 use crate::settings::SettingsStore;
+use crate::webhook::WebhookManager;
 
 /// Build and run the desktop application.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -49,11 +51,26 @@ pub fn run() {
             let settings = SettingsStore::load(&settings_path).expect("failed to load settings");
             let fonnte = FonnteClient::new();
             let blaster = BlasterEngine::new(db.clone(), settings.clone(), fonnte.clone());
+            let webhook = WebhookManager::new(db.clone());
+
+            // Auto-start the webhook on launch if it is enabled in settings.
+            let snap = settings.snapshot();
+            if snap.webhook.enabled {
+                let mgr = webhook.clone();
+                let handle = app.handle().clone();
+                let port = snap.webhook.port;
+                tauri::async_runtime::spawn(async move {
+                    if let Err(e) = mgr.start(handle, port).await {
+                        tracing::error!("failed to start webhook on launch: {e}");
+                    }
+                });
+            }
 
             app.manage(Arc::new(AppState {
                 db,
                 settings,
                 blaster,
+                webhook,
             }));
 
             Ok(())
@@ -70,6 +87,8 @@ pub fn run() {
             commands::start_blast,
             commands::stop_blast,
             commands::blast_progress,
+            commands::webhook_status,
+            commands::restart_webhook,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
