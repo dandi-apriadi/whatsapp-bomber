@@ -1,0 +1,24 @@
+# Rust / Cargo
+target/
+**/*.rs.bk
+Cargo.lock
+src-tauri/target/
+src-tauri/gen/
+
+# SQLite runtime artifacts
+*.db
+*.db-shm
+*.db-wal
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Env
+.env
+.env.local
+
+# Logs
+*.log
