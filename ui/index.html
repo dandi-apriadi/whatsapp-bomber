@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WhatsApp Blaster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="bg-slate-900 text-slate-100 min-h-screen">
+    <header class="border-b border-slate-800 px-8 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-emerald-500/20 grid place-items-center">
+          <span class="text-emerald-400 text-lg">⚡</span>
+        </div>
+        <div>
+          <h1 class="text-lg font-semibold">WhatsApp Blaster</h1>
+          <p class="text-xs text-slate-400">Fonnte gateway · multi-account</p>
+        </div>
+      </div>
+      <nav class="flex gap-3 text-sm">
+        <a href="index.html" class="px-3 py-1.5 rounded bg-slate-800 text-slate-100">Dashboard</a>
+        <a href="settings.html" class="px-3 py-1.5 rounded hover:bg-slate-800 text-slate-300">Settings</a>
+      </nav>
+    </header>
+
+    <main class="px-8 py-6 grid grid-cols-12 gap-6">
+      <!-- Stats -->
+      <section class="col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="rounded-xl bg-slate-800/60 p-4 border border-slate-700">
+          <div class="text-xs uppercase text-slate-400">Contacts</div>
+          <div id="stat-contacts" class="text-2xl font-semibold mt-1">0</div>
+        </div>
+        <div class="rounded-xl bg-emerald-900/40 p-4 border border-emerald-800/50">
+          <div class="text-xs uppercase text-emerald-300">Sent</div>
+          <div id="stat-sent" class="text-2xl font-semibold mt-1">0</div>
+        </div>
+        <div class="rounded-xl bg-amber-900/40 p-4 border border-amber-800/50">
+          <div class="text-xs uppercase text-amber-300">Skipped</div>
+          <div id="stat-skipped" class="text-2xl font-semibold mt-1">0</div>
+        </div>
+        <div class="rounded-xl bg-rose-900/40 p-4 border border-rose-800/50">
+          <div class="text-xs uppercase text-rose-300">Failed</div>
+          <div id="stat-failed" class="text-2xl font-semibold mt-1">0</div>
+        </div>
+      </section>
+
+      <!-- Composer -->
+      <section class="col-span-12 lg:col-span-7 rounded-xl bg-slate-800/60 p-5 border border-slate-700 space-y-4">
+        <h2 class="font-semibold text-base">Compose blast</h2>
+        <div>
+          <label class="text-xs text-slate-400">Message template</label>
+          <textarea
+            id="msg-template"
+            rows="5"
+            class="w-full mt-1 rounded-lg bg-slate-900 border border-slate-700 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            placeholder="Hi {name}! …"
+          >Hi {name}, this is a test message from WhatsApp Blaster.</textarea>
+          <p class="text-xs text-slate-500 mt-1">
+            Placeholders: <code class="text-emerald-400">{name}</code>,
+            <code class="text-emerald-400">{phone}</code>
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            id="btn-import"
+            class="rounded-lg bg-slate-700 hover:bg-slate-600 px-4 py-2 text-sm"
+          >
+            Import CSV / XLSX
+          </button>
+          <button
+            id="btn-add-manual"
+            class="rounded-lg bg-slate-700 hover:bg-slate-600 px-4 py-2 text-sm"
+          >
+            + Add contact
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            id="btn-start"
+            class="rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold px-5 py-2"
+          >
+            Start blast
+          </button>
+          <button
+            id="btn-stop"
+            class="rounded-lg bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-sm hidden"
+          >
+            Stop
+          </button>
+          <span id="status-line" class="text-xs text-slate-400"></span>
+        </div>
+
+        <div class="pt-2">
+          <div class="flex justify-between text-xs text-slate-400 mb-1">
+            <span id="progress-label">0 / 0</span>
+            <span id="progress-current"></span>
+          </div>
+          <div class="w-full bg-slate-900 rounded h-2 overflow-hidden">
+            <div id="progress-bar" class="h-2 bg-emerald-500 transition-all" style="width: 0%"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contacts queue -->
+      <section class="col-span-12 lg:col-span-5 rounded-xl bg-slate-800/60 p-5 border border-slate-700">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold text-base">Contacts</h2>
+          <button id="btn-clear-contacts" class="text-xs text-rose-300 hover:text-rose-200">
+            Clear all
+          </button>
+        </div>
+        <div id="contacts-list" class="max-h-[420px] overflow-auto divide-y divide-slate-700/60 text-sm"></div>
+      </section>
+
+      <!-- Logs -->
+      <section class="col-span-12 rounded-xl bg-slate-800/60 p-5 border border-slate-700">
+        <h2 class="font-semibold text-base mb-3">Recent logs</h2>
+        <div class="overflow-auto max-h-[320px]">
+          <table class="w-full text-sm">
+            <thead class="text-xs text-slate-400 uppercase">
+              <tr class="text-left">
+                <th class="py-2">Time</th>
+                <th>Status</th>
+                <th>Contact</th>
+                <th>API key</th>
+                <th>Detail</th>
+              </tr>
+            </thead>
+            <tbody id="logs-body" class="divide-y divide-slate-700/40"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
