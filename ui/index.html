@@ -115,6 +115,38 @@
         <div id="contacts-list" class="max-h-[420px] overflow-auto divide-y divide-slate-700/60 text-sm"></div>
       </section>
 
+      <!-- Webhook status -->
+      <section class="col-span-12 rounded-xl bg-slate-800/60 p-5 border border-slate-700">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="font-semibold text-base">Webhook (passive contact sync)</h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Auto-saves senders' phone + push-name into contacts whenever Fonnte forwards an incoming message.
+            </p>
+          </div>
+          <span id="webhook-pill" class="text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-300">offline</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div class="rounded-lg bg-slate-900/50 p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 uppercase">Listening port</div>
+            <div id="webhook-port-display" class="text-lg font-semibold mt-1">—</div>
+          </div>
+          <div class="rounded-lg bg-slate-900/50 p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 uppercase">Events received</div>
+            <div id="webhook-received" class="text-lg font-semibold mt-1">0</div>
+          </div>
+          <div class="rounded-lg bg-slate-900/50 p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 uppercase">Contacts added</div>
+            <div id="webhook-added" class="text-lg font-semibold mt-1">0</div>
+          </div>
+          <div class="rounded-lg bg-slate-900/50 p-3 border border-slate-700">
+            <div class="text-xs text-slate-400 uppercase">Contacts updated</div>
+            <div id="webhook-updated" class="text-lg font-semibold mt-1">0</div>
+          </div>
+        </div>
+        <p id="webhook-last" class="text-xs text-slate-500 mt-3"></p>
+      </section>
+
       <!-- Logs -->
       <section class="col-span-12 rounded-xl bg-slate-800/60 p-5 border border-slate-700">
         <h2 class="font-semibold text-base mb-3">Recent logs</h2>

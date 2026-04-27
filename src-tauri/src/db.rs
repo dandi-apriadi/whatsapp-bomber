@@ -99,6 +99,21 @@ impl Db {
         Ok(id)
     }
 
+    /// Look up a contact by its already-normalized phone number.
+    pub async fn find_contact_by_phone(&self, phone: &str) -> AppResult<Option<Contact>> {
+        let row = sqlx::query_as::<_, Contact>(
+            r#"
+            SELECT id, phone, name, last_sent_date
+            FROM contacts
+            WHERE phone = ?1
+            "#,
+        )
+        .bind(phone)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(row)
+    }
+
     pub async fn list_contacts(&self, limit: i64) -> AppResult<Vec<Contact>> {
         let rows = sqlx::query_as::<_, Contact>(
             r#"

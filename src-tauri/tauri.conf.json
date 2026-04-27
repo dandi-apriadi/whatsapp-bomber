@@ -4,12 +4,10 @@
   "version": "0.1.0",
   "identifier": "com.dandiapriadi.whatsappbomber",
   "build": {
-    "frontendDist": "../ui",
-    "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "",
-    "beforeBuildCommand": ""
+    "frontendDist": "../ui"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "WhatsApp Blaster",
