@@ -16,3 +16,18 @@ html, body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Native form controls on WebKitGTK ignore Tailwind bg/color utilities, so
+   the selected option text was rendering nearly invisible. Force consistent
+   dark styling for inputs / selects / textareas. */
+input,
+select,
+textarea {
+  color: #f1f5f9;
+  background-color: #0f172a;
+  color-scheme: dark;
+}
+select option {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
